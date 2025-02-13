@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Valentine's Puzzle</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #080f1a;
+      color: pink;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
+    }
+
+    .puzzle-container {
+      text-align: center;
+    }
+
+    .puzzle-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 5px;
+      margin: 20px auto;
+      margin-left: 200px
+    }
+
+    .puzzle-piece {
+      width: 100px;
+      height: 100px;
+      background-size: cover;
+      cursor: grab;
+      border: 2px solid #d52d58;
+      border-radius: 10px;
+    }
+
+    .puzzle-piece.correct {
+      border-color: #338f37;
+    }
+
+    .message {
+      margin-top: 20px;
+      font-size: 1.5rem;
+      color: #d52d58;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="puzzle-container">
+    <h1>Solve the Puzzle to Unlock the Valentine's Surprise!</h1>
+    <div class="puzzle-grid" id="puzzle-grid">
+      <!-- Puzzle pieces will be dynamically inserted here -->
+    </div>
+    <div class="message hidden" id="success-message">
+      Puzzle Solved! Redirecting to the Valentine's Page...
+    </div>
+  </div>
+
+  <script>
+    const puzzleGrid = document.getElementById('puzzle-grid');
+    const successMessage = document.getElementById('success-message');
+    const correctOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9]; // Correct order of the puzzle pieces
+    let currentOrder = shuffle([...correctOrder]); // Shuffled order of the puzzle pieces
+
+    // Function to shuffle the puzzle pieces
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // Function to create the puzzle pieces
+    function createPuzzle() {
+      puzzleGrid.innerHTML = '';
+      currentOrder.forEach((piece, index) => {
+        const puzzlePiece = document.createElement('div');
+        puzzlePiece.classList.add('puzzle-piece');
+        puzzlePiece.style.backgroundImage = `url('puzzle-image-${piece}.jpg')`;
+        puzzlePiece.dataset.correctPosition = correctOrder.indexOf(piece) + 1;
+        puzzlePiece.dataset.index = index;
+        puzzlePiece.draggable = true;
+        puzzlePiece.addEventListener('dragstart', dragStart);
+        puzzlePiece.addEventListener('dragover', dragOver);
+        puzzlePiece.addEventListener('drop', drop);
+        puzzleGrid.appendChild(puzzlePiece);
+      });
+    }
+
+    let draggedPiece = null;
+
+    // Function to handle drag start
+    function dragStart(event) {
+      draggedPiece = event.target;
+      event.dataTransfer.setData('text/plain', event.target.dataset.index);
+    }
+
+    // Function to handle drag over
+    function dragOver(event) {
+      event.preventDefault();
+    }
+
+    // Function to handle drop
+    function drop(event) {
+      event.preventDefault();
+      const targetPiece = event.target;
+      const draggedIndex = parseInt(draggedPiece.dataset.index);
+      const targetIndex = parseInt(targetPiece.dataset.index);
+
+      if (isAdjacent(draggedIndex, targetIndex)) {
+        [currentOrder[draggedIndex], currentOrder[targetIndex]] = [currentOrder[targetIndex], currentOrder[draggedIndex]];
+        createPuzzle();
+        checkWin();
+      }
+    }
+
+    // Function to check if two pieces are adjacent
+    function isAdjacent(index1, index2) {
+      const row1 = Math.floor(index1 / 3);
+      const col1 = index1 % 3;
+      const row2 = Math.floor(index2 / 3);
+      const col2 = index2 % 3;
+      return Math.abs(row1 - row2) + Math.abs(col1 - col2) === 1;
+    }
+
+    // Function to check if the puzzle is solved
+    function checkWin() {
+      if (currentOrder.every((piece, index) => piece === correctOrder[index])) {
+        successMessage.classList.remove('hidden');
+        setTimeout(() => {
+          window.location.href = 'Surprise.html'; // Redirect to the main page
+        }, 2000); // Redirect after 2 seconds
+      }
+    }
+
+    // Initialize the puzzle
+    createPuzzle();
+  
+  
+  </script>
+</body>
+</html>
